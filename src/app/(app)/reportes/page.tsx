@@ -6,6 +6,7 @@ import { listarProveedores } from "@/modulos/proveedores/consultas/proveedores";
 import { calcularResumenDelDia, hoyISO } from "@/modulos/reportes/consultas/calculos";
 import { obtenerVentasDelDia } from "@/modulos/reportes/consultas/reportes";
 import { PanelReportes } from "@/modulos/reportes/componentes/PanelReportes";
+import { PestanasReportes } from "@/modulos/reportes/componentes/PestanasReportes";
 import { listarCategorias, listarProductos } from "@/modulos/stock/consultas/productos";
 
 // Dueño-only (Fase 2 de PLAN-ROLES-AUDITORIA.md): balance, márgenes y
@@ -29,14 +30,18 @@ export default async function PaginaReportes() {
     <>
       <BarraSuperior titulo="Reportes" />
       <main className="flex-1 p-4 md:p-6">
-        <PanelReportes
-          fechaInicial={fecha}
-          resumenInicial={calcularResumenDelDia(ventas)}
-          ventasIniciales={ventas}
-          productos={productos}
-          categorias={categorias}
-          proveedores={proveedores}
-          clientes={clientes}
+        <PestanasReportes
+          diario={
+            <PanelReportes
+              fechaInicial={fecha}
+              resumenInicial={calcularResumenDelDia(ventas)}
+              ventasIniciales={ventas}
+              productos={productos}
+              categorias={categorias}
+              proveedores={proveedores}
+              clientes={clientes}
+            />
+          }
         />
       </main>
     </>
