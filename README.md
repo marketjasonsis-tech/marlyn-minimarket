@@ -165,6 +165,14 @@ se le antepone 54, y un celular puede necesitar además el 9, así que
 conviene cargarlo completo). Desde el alta de producto también se puede
 crear un proveedor con solo el nombre.
 
+**No comprar más:** el dueño marca un producto (desde Stock → Editar o
+desde el ranking de Reportes → Períodos → Productos) con un motivo
+opcional. Aparece en el listado "No comprar más" de Proveedores, con
+etiqueta roja y aviso al armar un pedido y en las alertas de stock. Es
+solo un aviso, no bloquea. Vive en `productos.no_comprar` /
+`no_comprar_motivo` / `no_comprar_desde`; un producto eliminado no
+figura en la lista.
+
 ### Promociones (`/promociones`)
 
 Descuento por cantidad ("3 × $100") y combos de productos distintos a
@@ -173,10 +181,21 @@ Modelo de datos y algoritmo en [`PROMOCIONES.md`](PROMOCIONES.md).
 
 ### Reportes (`/reportes`, solo dueño)
 
-- Dashboard de un día elegido: Ventas, Ticket promedio, Transacciones,
-  Balance, ventas por hora, medios de pago, top 10 productos, alertas de
-  stock y detalle de ventas (con desglose por medio y ticket). Export a
-  Excel.
+- Dos pestañas. **Diario:** dashboard de un día elegido (Ventas, Ticket
+  promedio, Transacciones, Balance, ventas por hora, medios de pago,
+  top 10 productos, alertas de stock y detalle de ventas con desglose
+  por medio y ticket; export a Excel). **Períodos:** ventas y ranking
+  por rango de fechas.
+- **Períodos:** atajos (7/30 días, este mes, mes pasado, 6 meses, último
+  año) o fechas a mano, con comparación contra el período anterior
+  (mismo largo, justo antes). Subpestaña *Ventas*: volumen, variación %,
+  gráfico de evolución (por día hasta 31 días, por semana hasta ~6
+  meses, por mes más allá), cantidad de ventas, ticket promedio y
+  Balance. Subpestaña *Productos*: más y menos vendidos por monto o por
+  unidades (top 10/25/50); los menos vendidos incluyen los que no
+  vendieron nada, y los cargados dentro del período llevan "nuevo". Los
+  agregados se calculan en Postgres (`reporte_periodo`,
+  `ranking_productos`; solo dueño) y cuentan solo ventas confirmadas.
 - **Balance** es margen bruto calculado con el costo *actual* de cada
   producto: no se guarda el costo histórico por venta.
 - **Backup completo:** un `.xlsx` con una hoja por tabla y las

@@ -25,6 +25,9 @@ function producto(id: string, nombre: string): Producto {
     stockMinimo: 0,
     unidad: "unidad",
     activo: true,
+    noComprar: false,
+    noComprarMotivo: null,
+    noComprarDesde: null,
   };
 }
 

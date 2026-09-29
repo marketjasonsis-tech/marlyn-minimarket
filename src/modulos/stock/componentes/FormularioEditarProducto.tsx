@@ -11,6 +11,7 @@ import { CamposCodigosBarras, casillasDesde } from "./CamposCodigosBarras";
 import { validarCodigosAdicionales } from "../consultas/codigosBarras";
 import { Modal } from "@/componentes/Modal";
 import { useEsDueño } from "@/lib/supabase/PerfilContext";
+import { datosNoComprar } from "../consultas/noComprar";
 import { validarProducto, type ErroresProducto } from "../consultas/validacion";
 import { calcularGananciaDesdePrecioVenta, calcularPrecioVentaDesdeGanancia } from "../consultas/precios";
 import type { Producto, Proveedor } from "../tipos";
@@ -69,6 +70,8 @@ function estadoDesdeProducto(producto: Producto) {
     precioVenta: String(producto.precioVenta),
     stockMinimo: String(producto.stockMinimo),
     unidad: producto.unidad,
+    noComprar: producto.noComprar,
+    motivoNoComprar: producto.noComprarMotivo ?? "",
   };
 }
 
@@ -231,6 +234,7 @@ export function FormularioEditarProducto({
           porcentaje_ganancia: campos.porcentajeGanancia === "" ? null : Number(campos.porcentajeGanancia),
           stock_minimo: datos.stockMinimo,
           unidad: campos.unidad,
+          ...datosNoComprar(campos.noComprar, campos.motivoNoComprar, producto.noComprarDesde),
         })
         .eq("id", producto.id);
 
@@ -394,6 +398,28 @@ export function FormularioEditarProducto({
               onChange={(evento) => setCampos({ ...campos, stockMinimo: evento.target.value })}
             />
             {errores.stockMinimo && <p className="text-sm text-alerta">{errores.stockMinimo}</p>}
+          </div>
+
+          <div className="flex flex-col gap-2 rounded-[var(--radius-base)] border border-linea p-3">
+            <label htmlFor={`noComprar-${producto.id}`} className="flex items-center gap-2 text-sm text-texto">
+              <input
+                type="checkbox"
+                id={`noComprar-${producto.id}`}
+                checked={campos.noComprar}
+                onChange={(evento) => setCampos({ ...campos, noComprar: evento.target.checked })}
+                className="h-4 w-4 accent-acento"
+              />
+              No comprar más este producto
+            </label>
+            {campos.noComprar && (
+              <Campo
+                etiqueta="Motivo (opcional)"
+                id={`motivoNoComprarEdicion-${producto.id}`}
+                placeholder="Ej: se vence rápido, mala calidad"
+                value={campos.motivoNoComprar}
+                onChange={(evento) => setCampos({ ...campos, motivoNoComprar: evento.target.value })}
+              />
+            )}
           </div>
 
           {errorGeneral && (

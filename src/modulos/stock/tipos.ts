@@ -35,4 +35,10 @@ export type Producto = {
   stockMinimo: number;
   unidad: "unidad" | "kg" | "litro";
   activo: boolean;
+  /** El dueño decidió no volver a comprarlo (ver README: "No comprar
+   *  más"). Se avisa en pedidos y alertas de stock; nunca bloquea nada. */
+  noComprar: boolean;
+  noComprarMotivo: string | null;
+  /** ISO. null si no está marcado. */
+  noComprarDesde: string | null;
 };

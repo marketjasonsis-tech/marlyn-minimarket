@@ -40,3 +40,27 @@ export type ResumenDia = {
   distribucionMedioPago: { medio: string; monto: number; porcentaje: number }[];
   topProductos: { productoId: string; nombre: string; cantidad: number; subtotal: number; eliminado: boolean }[];
 };
+
+export type PuntoSerie = { inicio: string; total: number };
+
+export type ReportePeriodo = {
+  total: number;
+  cantidad: number;
+  ticketPromedio: number;
+  margen: number;
+  serie: PuntoSerie[];
+};
+
+export type OrdenRanking = "monto" | "cantidad";
+export type SentidoRanking = "desc" | "asc";
+
+export type FilaRanking = {
+  productoId: string;
+  nombre: string;
+  unidad: "unidad" | "kg" | "litro";
+  cantidad: number;
+  monto: number;
+  noComprar: boolean;
+  noComprarMotivo: string | null;
+  nuevo: boolean;
+};
