@@ -24,3 +24,11 @@ export function tamañoTextoItem(nombre: string): string {
   const [, clase] = CORTES.find(([maximo]) => nombre.length <= maximo)!;
   return clase;
 }
+
+// Un producto por peso (kg/litro) se vende por gramos o por monto, y la
+// cantidad en kg queda como "0.08333": no le sirve al cliente en la TV,
+// que solo necesita ver el nombre y cuánto paga (pedido de Jason). null =
+// no mostrar cantidad.
+export function etiquetaCantidadItem(item: { cantidad: number; porPeso?: boolean }): string | null {
+  return item.porPeso ? null : `${item.cantidad} ×`;
+}

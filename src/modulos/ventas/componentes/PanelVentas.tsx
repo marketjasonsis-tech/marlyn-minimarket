@@ -376,6 +376,7 @@ export function PanelVentas({
           nombre: item.nombre,
           cantidad: item.cantidad,
           precioUnitario: item.precioUnitario,
+          porPeso: productos.find((producto) => producto.id === item.productoId)?.unidad !== "unidad",
           subtotal: calcularSubtotalItem(item),
           promoAplicada: item.promoAplicada,
         })),
@@ -385,7 +386,7 @@ export function PanelVentas({
     // Se manda con cada cambio del carrito activo: agregar/sacar
     // productos y cambiar de pestaña caen acá solos, porque
     // carritoActivo ya deriva de cuál pestaña está seleccionada.
-  }, [canalPantallaListo, itemsConPromo, total]);
+  }, [canalPantallaListo, itemsConPromo, total, productos]);
 
   function agregarProducto(producto: Producto) {
     setError(null);

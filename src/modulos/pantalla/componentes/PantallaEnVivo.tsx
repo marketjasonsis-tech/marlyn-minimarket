@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { crearClienteNavegador } from "@/lib/supabase/cliente";
 import { clienteConfig } from "@/config/cliente";
-import { tamañoTextoItem } from "../consultas/formato";
+import { etiquetaCantidadItem, tamañoTextoItem } from "../consultas/formato";
 import { CANAL_EVENTO_CARRITO, nombreCanalPantalla, type CarritoPantalla } from "../tipos";
 
 const platita = new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS" });
@@ -94,7 +94,12 @@ export function PantallaEnVivo({ token }: { token: string }) {
             <li key={item.productoId} className={tamañoTextoItem(item.nombre)}>
               <div className="flex items-baseline justify-between gap-4">
                 <span>
-                  <span className="numero text-white/60">{item.cantidad} ×</span> {item.nombre}
+                  {etiquetaCantidadItem(item) && (
+                    <>
+                      <span className="numero text-white/60">{etiquetaCantidadItem(item)}</span>{" "}
+                    </>
+                  )}
+                  {item.nombre}
                 </span>
                 <span className="numero shrink-0 font-semibold">
                   {platita.format(item.subtotal ?? item.cantidad * item.precioUnitario)}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { tamañoTextoItem } from "./formato";
+import { etiquetaCantidadItem, tamañoTextoItem } from "./formato";
 
 describe("tamañoTextoItem", () => {
   it("un nombre corto usa el tamaño grande de siempre", () => {
@@ -15,5 +15,17 @@ describe("tamañoTextoItem", () => {
     const corto = orden.indexOf(tamañoTextoItem("Yerba"));
     const largo = orden.indexOf(tamañoTextoItem("Pasta de maní con chips de chocolate blanco y almendras 900g"));
     expect(largo).toBeLessThanOrEqual(corto);
+  });
+});
+
+describe("etiquetaCantidadItem", () => {
+  it("un producto por unidad muestra la cantidad antes del nombre", () => {
+    expect(etiquetaCantidadItem({ cantidad: 3 })).toBe("3 ×");
+    expect(etiquetaCantidadItem({ cantidad: 1, porPeso: false })).toBe("1 ×");
+  });
+
+  it("un producto por peso no muestra cantidad: solo el nombre y el precio", () => {
+    // Caso real del cliente: no querían "0.08333 × JAMON LARIO" en la TV.
+    expect(etiquetaCantidadItem({ cantidad: 0.08333, porPeso: true })).toBeNull();
   });
 });
