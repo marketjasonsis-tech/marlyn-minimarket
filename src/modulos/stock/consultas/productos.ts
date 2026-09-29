@@ -17,6 +17,9 @@ type FilaProducto = {
   stock_minimo: number | string;
   unidad: Producto["unidad"];
   activo: boolean;
+  no_comprar: boolean;
+  no_comprar_motivo: string | null;
+  no_comprar_desde: string | null;
 };
 
 // Lee de productos_visibles (vista, no la tabla): igual que productos,
@@ -31,7 +34,7 @@ export async function listarProductos(supabase: SupabaseClient): Promise<Product
   const data = await traerTodasLasFilas<FilaProducto>(
     supabase,
     "productos_visibles",
-    "id, nombre, categoria_id, proveedor_id, codigo_barras, codigos_adicionales, precio_costo, precio_venta, incluye_iva, porcentaje_ganancia, stock_actual, stock_minimo, unidad, activo",
+    "id, nombre, categoria_id, proveedor_id, codigo_barras, codigos_adicionales, precio_costo, precio_venta, incluye_iva, porcentaje_ganancia, stock_actual, stock_minimo, unidad, activo, no_comprar, no_comprar_motivo, no_comprar_desde",
     [
       { columna: "creado_en", ascendente: false },
       { columna: "id", ascendente: true },
@@ -53,6 +56,9 @@ export async function listarProductos(supabase: SupabaseClient): Promise<Product
     stockMinimo: Number(fila.stock_minimo),
     unidad: fila.unidad,
     activo: fila.activo,
+    noComprar: fila.no_comprar,
+    noComprarMotivo: fila.no_comprar_motivo,
+    noComprarDesde: fila.no_comprar_desde,
   }));
 }
 

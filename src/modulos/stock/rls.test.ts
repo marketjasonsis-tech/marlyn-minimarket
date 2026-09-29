@@ -200,6 +200,43 @@ describe("Rol operador (Fase 1 de PLAN-ROLES-AUDITORIA.md)", () => {
     expect(error?.code === "42501" || count === 0).toBe(true);
   });
 
+  it("el operador no puede marcar un producto como 'no comprar'", async () => {
+    const { error, count } = await clienteOperador
+      .from("productos")
+      .update(
+        { no_comprar: true, no_comprar_motivo: "intento operador", no_comprar_desde: new Date().toISOString() },
+        { count: "exact" },
+      )
+      .eq("id", productoId);
+
+    expect(error?.code === "42501" || count === 0).toBe(true);
+
+    const { data } = await clienteServicio.from("productos").select("no_comprar").eq("id", productoId).single();
+    expect(data?.no_comprar).toBe(false);
+  });
+
+  it("el dueño puede marcar y desmarcar 'no comprar', y la vista lo expone", async () => {
+    const { error } = await clienteDueño
+      .from("productos")
+      .update({ no_comprar: true, no_comprar_motivo: "se vence rápido", no_comprar_desde: new Date().toISOString() })
+      .eq("id", productoId);
+    expect(error).toBeNull();
+
+    const { data: marcado } = await clienteDueño
+      .from("productos_visibles")
+      .select("no_comprar, no_comprar_motivo")
+      .eq("id", productoId)
+      .single();
+    expect(marcado?.no_comprar).toBe(true);
+    expect(marcado?.no_comprar_motivo).toBe("se vence rápido");
+
+    const { error: errorQuitar } = await clienteDueño
+      .from("productos")
+      .update({ no_comprar: false, no_comprar_motivo: null, no_comprar_desde: null })
+      .eq("id", productoId);
+    expect(errorQuitar).toBeNull();
+  });
+
   it("el operador no puede crear un rubro", async () => {
     const { error } = await clienteOperador.from("categorias").insert({ nombre: "Rubro de operador" });
 
