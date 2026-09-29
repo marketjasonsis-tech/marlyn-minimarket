@@ -155,6 +155,19 @@ describe("ranking_productos", () => {
     expect(fila!.nuevo).toBe(true);
   });
 
+  it("los más vendidos (desc) no incluyen productos sin ventas en el período", async () => {
+    const { data, error } = await clienteDueño.rpc("ranking_productos", {
+      p_desde: DESDE,
+      p_hasta: HASTA,
+      p_orden: "monto",
+      p_sentido: "desc",
+      p_limite: 1000,
+    });
+    expect(error).toBeNull();
+    // Rango del año 2000: nadie vendió nada, así que no hay "más vendidos".
+    expect(data).toHaveLength(0);
+  });
+
   it("respeta el límite", async () => {
     const { data } = await clienteDueño.rpc("ranking_productos", {
       p_desde: DESDE,

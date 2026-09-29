@@ -100,6 +100,15 @@ afterAll(async () => {
   // colgada en la base real (pasó de verdad con auditoria/rls.test.ts
   // y con el operador de clientes/rls.test.ts — ver esos commits).
   if (productoId) {
+    // Los tests de ingreso/ajuste dejan movimientos de stock: sin borrarlos
+    // antes, la FK frena el delete y queda basura que rompe la corrida
+    // siguiente (categorias_nombre_unico).
+    const { error: errorMovimientos } = await clienteServicio
+      .from("movimientos_stock")
+      .delete()
+      .eq("producto_id", productoId);
+    if (errorMovimientos) throw errorMovimientos;
+
     const { error } = await clienteServicio.from("productos").delete().eq("id", productoId);
     if (error) throw error;
   }

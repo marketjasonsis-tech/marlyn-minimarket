@@ -27,17 +27,21 @@ function Ranking({
   sentido,
   orden,
   limite,
+  version,
+  alCambiar,
 }: {
   titulo: string;
   periodo: Periodo;
   sentido: SentidoRanking;
   orden: OrdenRanking;
   limite: number;
+  version: number;
+  alCambiar: () => void;
 }) {
   // Misma técnica que PanelPeriodos: "cargando" y "error" se derivan de
-  // la clave del pedido; `version` fuerza recargar tras marcar/quitar
-  // "no comprar más" (regla react-hooks/set-state-in-effect).
-  const [version, setVersion] = useState(0);
+  // la clave del pedido. `version` viene del padre: al marcar/quitar
+  // "no comprar más" en una lista se recargan las dos, así un producto
+  // que está en ambas no queda desactualizado.
   const [resultado, setResultado] = useState<{ clave: string; filas: FilaRanking[] } | null>(null);
   const [claveConError, setClaveConError] = useState<string | null>(null);
   const clave = `${periodo.inicio}|${periodo.fin}|${orden}|${sentido}|${limite}|${version}`;
@@ -95,7 +99,7 @@ function Ranking({
                 </span>
                 <BotonNoComprar
                   producto={{ id: fila.productoId, nombre: fila.nombre, noComprar: fila.noComprar }}
-                  onCambio={() => setVersion((anterior) => anterior + 1)}
+                  onCambio={alCambiar}
                 />
               </div>
             </li>
@@ -111,6 +115,8 @@ export function TablaRankingProductos({ periodo }: { periodo: Periodo }) {
   // comparar en unidades contra los de unidad.
   const [orden, setOrden] = useState<OrdenRanking>("monto");
   const [limite, setLimite] = useState(10);
+  const [version, setVersion] = useState(0);
+  const recargar = () => setVersion((anterior) => anterior + 1);
 
   return (
     <div className="flex flex-col gap-4">
@@ -135,8 +141,8 @@ export function TablaRankingProductos({ periodo }: { periodo: Periodo }) {
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Ranking titulo="Más vendidos" periodo={periodo} sentido="desc" orden={orden} limite={limite} />
-        <Ranking titulo="Menos vendidos" periodo={periodo} sentido="asc" orden={orden} limite={limite} />
+        <Ranking titulo="Más vendidos" periodo={periodo} sentido="desc" orden={orden} limite={limite} version={version} alCambiar={recargar} />
+        <Ranking titulo="Menos vendidos" periodo={periodo} sentido="asc" orden={orden} limite={limite} version={version} alCambiar={recargar} />
       </div>
     </div>
   );
