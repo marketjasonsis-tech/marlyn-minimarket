@@ -5,6 +5,7 @@ import { listarProveedores } from "@/modulos/proveedores/consultas/proveedores";
 import { listarProductos } from "@/modulos/stock/consultas/productos";
 import { FormularioNuevoProveedor } from "@/modulos/proveedores/componentes/FormularioNuevoProveedor";
 import { ListaProveedores } from "@/modulos/proveedores/componentes/ListaProveedores";
+import { PanelNoComprar } from "@/modulos/proveedores/componentes/PanelNoComprar";
 
 export default async function PaginaProveedores() {
   const supabase = await crearClienteServidor();
@@ -24,6 +25,7 @@ export default async function PaginaProveedores() {
         ) : (
           <ListaProveedores proveedores={proveedores} productos={productos} />
         )}
+        <PanelNoComprar productos={productos} proveedores={proveedores} />
       </main>
     </>
   );

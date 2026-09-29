@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Boton } from "@/componentes/Boton";
 import { Modal } from "@/componentes/Modal";
 import { clienteConfig } from "@/config/cliente";
+import { EtiquetaNoComprar } from "@/modulos/stock/componentes/EtiquetaNoComprar";
 import type { Producto } from "@/modulos/stock/tipos";
 import type { Proveedor } from "../tipos";
 
@@ -33,6 +34,10 @@ export function PanelPedidoProveedor({ proveedor, productos }: { proveedor: Prov
   const productosDelProveedor = useMemo(
     () => productos.filter((producto) => producto.proveedorId === proveedor.id),
     [productos, proveedor.id],
+  );
+
+  const marcadosElegidos = productosDelProveedor.filter(
+    (producto) => seleccionados[producto.id] && producto.noComprar,
   );
 
   function abrir() {
@@ -118,6 +123,11 @@ export function PanelPedidoProveedor({ proveedor, productos }: { proveedor: Prov
                       <span className="numero ml-1.5 text-xs text-texto-suave">
                         ({producto.stockActual} en góndola)
                       </span>
+                      {producto.noComprar && (
+                        <span className="ml-2">
+                          <EtiquetaNoComprar motivo={producto.noComprarMotivo} />
+                        </span>
+                      )}
                     </label>
                     <input
                       type="text"
@@ -130,6 +140,13 @@ export function PanelPedidoProveedor({ proveedor, productos }: { proveedor: Prov
                   </li>
                 ))}
               </ul>
+
+              {marcadosElegidos.length > 0 && (
+                <p className="rounded-[var(--radius-base)] bg-alerta-fondo px-3 py-2 text-sm text-alerta">
+                  Ojo: {marcadosElegidos.map((producto) => producto.nombre).join(", ")} está en la lista de
+                  &ldquo;no comprar más&rdquo;. Revisá antes de pedirlo.
+                </p>
+              )}
 
               <Boton type="button" onClick={generarPedido}>
                 Generar pedido

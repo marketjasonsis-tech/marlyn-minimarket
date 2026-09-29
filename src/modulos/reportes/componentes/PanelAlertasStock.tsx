@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Insignia } from "@/componentes/Insignia";
+import { EtiquetaNoComprar } from "@/modulos/stock/componentes/EtiquetaNoComprar";
 import type { Producto } from "@/modulos/stock/tipos";
 
 const TAMANO_PAGINA = 8;
@@ -43,7 +44,10 @@ export function PanelAlertasStock({ productos }: { productos: Producto[] }) {
           <ul className="flex flex-col gap-2">
             {productosPagina.map((producto) => (
               <li key={producto.id} className="flex items-center justify-between gap-3 text-sm">
-                <span className="text-texto">{producto.nombre}</span>
+                <span className="flex flex-col gap-0.5 text-texto">
+                  {producto.nombre}
+                  {producto.noComprar && <EtiquetaNoComprar motivo={producto.noComprarMotivo} />}
+                </span>
                 <span className="flex items-center gap-2">
                   <span className="numero text-xs text-texto-suave">{producto.stockActual} u</span>
                   <Insignia variante="alerta">reponer</Insignia>
