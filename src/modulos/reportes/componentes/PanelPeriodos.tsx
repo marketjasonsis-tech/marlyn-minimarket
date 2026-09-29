@@ -16,6 +16,7 @@ import { obtenerReportePeriodo } from "../consultas/reportes";
 import type { ReportePeriodo } from "../tipos";
 import { GraficoEvolucion } from "./GraficoEvolucion";
 import { SelectorPeriodo } from "./SelectorPeriodo";
+import { TablaRankingProductos } from "./TablaRankingProductos";
 
 const platita = new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS" });
 
@@ -23,6 +24,7 @@ export function PanelPeriodos() {
   const [atajo, setAtajo] = useState<AtajoPeriodo>("30d");
   const [periodo, setPeriodo] = useState<Periodo>(() => periodoDeAtajo("30d", hoyISO())!);
   const [comparar, setComparar] = useState(false);
+  const [vista, setVista] = useState<"ventas" | "productos">("ventas");
   // El resultado guarda la clave con la que se pidió: "cargando" y
   // "error" se derivan de compararla con la clave actual, así el efecto
   // solo actualiza estado desde los callbacks de la promesa (regla
@@ -90,7 +92,26 @@ export function PanelPeriodos() {
         <p className="rounded-[var(--radius-base)] bg-alerta-fondo px-3 py-2 text-sm text-alerta">{error}</p>
       )}
 
-      {valido && actual && (
+      <div role="tablist" className="flex gap-1">
+        {(["ventas", "productos"] as const).map((id) => (
+          <button
+            key={id}
+            type="button"
+            role="tab"
+            aria-selected={vista === id}
+            onClick={() => setVista(id)}
+            className={`rounded-[var(--radius-base)] px-3 py-1.5 text-sm font-medium transition ${
+              vista === id ? "bg-acento text-acento-texto" : "text-texto-suave hover:text-texto"
+            }`}
+          >
+            {id === "ventas" ? "Ventas" : "Productos"}
+          </button>
+        ))}
+      </div>
+
+      {valido && vista === "productos" && <TablaRankingProductos periodo={periodo} />}
+
+      {valido && vista === "ventas" && actual && (
         <div className={`flex flex-col gap-4 transition-opacity ${cargando ? "opacity-50" : ""}`}>
           <div className="rounded-[var(--radius-base)] border border-linea bg-superficie p-4">
             <p className="text-xs font-medium uppercase tracking-wide text-texto-suave">Volumen de ventas</p>
