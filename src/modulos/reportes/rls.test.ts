@@ -166,3 +166,98 @@ describe("ranking_productos", () => {
     expect(data).toHaveLength(1);
   });
 });
+
+describe("agregados con ventas reales", () => {
+  // Un día local de Buenos Aires (UTC-3) en 2001: 03:00Z a 03:00Z del día siguiente.
+  const DIA_DESDE = "2001-03-10T03:00:00.000Z";
+  const DIA_HASTA = "2001-03-11T03:00:00.000Z";
+  let turnoId: string;
+  const ventaIds: string[] = [];
+
+  async function crearVenta(total: number, estado: "confirmada" | "anulada", creadoEn: string, cantidad: number) {
+    const { data: venta, error } = await clienteServicio
+      .from("ventas")
+      .insert({
+        turno_caja_id: turnoId,
+        usuario_id: dueñoId,
+        subtotal: total,
+        total,
+        estado,
+        creado_en: creadoEn,
+        ...(estado === "anulada" ? { anulada_en: creadoEn, anulada_por: dueñoId, motivo_anulacion: "prueba" } : {}),
+      })
+      .select("id")
+      .single();
+    if (error || !venta) throw error ?? new Error("No se pudo crear la venta de prueba");
+    ventaIds.push(venta.id);
+
+    const { error: errorItem } = await clienteServicio
+      .from("ventas_items")
+      .insert({ venta_id: venta.id, producto_id: productoId, cantidad, precio_unitario: total / cantidad, subtotal: total });
+    if (errorItem) throw errorItem;
+  }
+
+  beforeAll(async () => {
+    const { error: errorCosto } = await clienteServicio.from("productos").update({ precio_costo: 40 }).eq("id", productoId);
+    if (errorCosto) throw errorCosto;
+
+    const { data: turno, error } = await clienteServicio
+      .from("turnos_caja")
+      .insert({ usuario_id: dueñoId, estado: "cerrado", cerrado_en: DIA_HASTA })
+      .select("id")
+      .single();
+    if (error || !turno) throw error ?? new Error("No se pudo crear el turno de prueba");
+    turnoId = turno.id;
+
+    // 11:00 hora local: cae en el día.
+    await crearVenta(300, "confirmada", "2001-03-10T14:00:00.000Z", 2);
+    // 23:30 hora local (ya es el día siguiente en UTC): sigue siendo el mismo día local.
+    await crearVenta(100, "confirmada", "2001-03-11T02:30:00.000Z", 1);
+    // Anulada: no debe contar en nada.
+    await crearVenta(999, "anulada", "2001-03-10T15:00:00.000Z", 1);
+  });
+
+  afterAll(async () => {
+    for (const id of ventaIds) {
+      const { error } = await clienteServicio.from("ventas").delete().eq("id", id);
+      if (error) throw error;
+    }
+    if (turnoId) {
+      const { error } = await clienteServicio.from("turnos_caja").delete().eq("id", turnoId);
+      if (error) throw error;
+    }
+  });
+
+  it("reporte_periodo suma solo ventas confirmadas, calcula el margen y ubica las de la noche en su día local", async () => {
+    const { data, error } = await clienteDueño.rpc("reporte_periodo", {
+      p_desde: DIA_DESDE,
+      p_hasta: DIA_HASTA,
+      p_granularidad: "dia",
+      p_zona: ZONA,
+    });
+    expect(error).toBeNull();
+    expect(Number(data.total)).toBe(400);
+    expect(Number(data.cantidad)).toBe(2);
+    // (300 - 40×2) + (100 - 40×1)
+    expect(Number(data.margen)).toBe(280);
+    expect(data.serie).toHaveLength(1);
+    expect(data.serie[0].inicio).toBe("2001-03-10");
+    expect(Number(data.serie[0].total)).toBe(400);
+  });
+
+  it("ranking_productos suma cantidad y monto sin contar la venta anulada", async () => {
+    const { data, error } = await clienteDueño.rpc("ranking_productos", {
+      p_desde: DIA_DESDE,
+      p_hasta: DIA_HASTA,
+      p_orden: "monto",
+      p_sentido: "desc",
+      p_limite: 1000,
+    });
+    expect(error).toBeNull();
+    const fila = (data as { producto_id: string; cantidad: number; monto: number }[]).find(
+      (item) => item.producto_id === productoId,
+    );
+    expect(Number(fila!.cantidad)).toBe(3);
+    expect(Number(fila!.monto)).toBe(400);
+  });
+});

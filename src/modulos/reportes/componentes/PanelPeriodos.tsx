@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { crearClienteNavegador } from "@/lib/supabase/cliente";
 import { hoyISO } from "../consultas/calculos";
+import { estadoDeCarga } from "../consultas/estadoDeCarga";
 import {
   elegirGranularidad,
   periodoAnterior,
@@ -49,7 +50,9 @@ export function PanelPeriodos() {
       comparar ? obtenerReportePeriodo(supabase, periodoAnterior(periodo), granularidad) : Promise.resolve(null),
     ])
       .then(([actual, previo]) => {
-        if (vigente) setResultado({ clave, actual, previo });
+        if (!vigente) return;
+        setResultado({ clave, actual, previo });
+        setClaveConError(null);
       })
       .catch(() => {
         if (vigente) setClaveConError(clave);
@@ -59,10 +62,13 @@ export function PanelPeriodos() {
     };
   }, [periodo, granularidad, comparar, valido, clave]);
 
-  const cargando = valido && resultado?.clave !== clave && claveConError !== clave;
-  const error = valido && claveConError === clave ? "No se pudo cargar el reporte. Probá de nuevo." : null;
-  const actual = resultado?.actual ?? null;
-  const previo = comparar ? (resultado?.previo ?? null) : null;
+  const estado = estadoDeCarga(clave, resultado?.clave ?? null, claveConError);
+  const cargando = valido && estado.cargando;
+  const error = valido && estado.error ? "No se pudo cargar el reporte. Probá de nuevo." : null;
+  // Con error no se muestran los números del período anterior debajo del
+  // selector del período nuevo.
+  const actual = estado.error ? null : (resultado?.actual ?? null);
+  const previo = comparar && !estado.error ? (resultado?.previo ?? null) : null;
 
   function elegirAtajo(nuevo: AtajoPeriodo) {
     setAtajo(nuevo);

@@ -5,6 +5,7 @@ import { Insignia } from "@/componentes/Insignia";
 import { crearClienteNavegador } from "@/lib/supabase/cliente";
 import { BotonNoComprar } from "@/modulos/stock/componentes/BotonNoComprar";
 import { EtiquetaNoComprar } from "@/modulos/stock/componentes/EtiquetaNoComprar";
+import { estadoDeCarga } from "../consultas/estadoDeCarga";
 import type { Periodo } from "../consultas/periodos";
 import { obtenerRankingProductos } from "../consultas/reportes";
 import type { FilaRanking, OrdenRanking, SentidoRanking } from "../tipos";
@@ -45,7 +46,9 @@ function Ranking({
     let vigente = true;
     obtenerRankingProductos(crearClienteNavegador(), { periodo, orden, sentido, limite })
       .then((filas) => {
-        if (vigente) setResultado({ clave, filas });
+        if (!vigente) return;
+        setResultado({ clave, filas });
+        setClaveConError(null);
       })
       .catch(() => {
         if (vigente) setClaveConError(clave);
@@ -55,9 +58,8 @@ function Ranking({
     };
   }, [periodo, orden, sentido, limite, clave]);
 
-  const error = claveConError === clave;
+  const { error, cargando } = estadoDeCarga(clave, resultado?.clave ?? null, claveConError);
   const filas = resultado?.filas ?? null;
-  const cargando = resultado?.clave !== clave && !error;
 
   return (
     <div className="rounded-[var(--radius-base)] border border-linea bg-superficie p-4">
