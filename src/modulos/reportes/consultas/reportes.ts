@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { VentaReporte } from "../tipos";
+import type { FilaRanking, OrdenRanking, ReportePeriodo, SentidoRanking, VentaReporte } from "../tipos";
 import { limitesDelDia } from "./calculos";
+import { limitesDelPeriodo, zonaLocal, type Granularidad, type Periodo } from "./periodos";
 
 type FilaVentaReporte = {
   id: string;
@@ -57,5 +58,75 @@ export async function obtenerVentasDelDia(supabase: SupabaseClient, fecha: strin
       monto: Number(pago.monto),
       vuelto: Number(pago.vuelto),
     })),
+  }));
+}
+
+export async function obtenerReportePeriodo(
+  supabase: SupabaseClient,
+  periodo: Periodo,
+  granularidad: Granularidad,
+): Promise<ReportePeriodo> {
+  const { desde, hasta } = limitesDelPeriodo(periodo);
+  const { data, error } = await supabase.rpc("reporte_periodo", {
+    p_desde: desde,
+    p_hasta: hasta,
+    p_granularidad: granularidad,
+    p_zona: zonaLocal(),
+  });
+  if (error) throw error;
+
+  const fila = data as {
+    total: number | string;
+    cantidad: number | string;
+    margen: number | string;
+    serie: { inicio: string; total: number | string }[];
+  };
+  const total = Number(fila.total);
+  const cantidad = Number(fila.cantidad);
+
+  return {
+    total,
+    cantidad,
+    // Sin ventas el ticket promedio es 0, no NaN.
+    ticketPromedio: cantidad > 0 ? Math.round((total / cantidad) * 100) / 100 : 0,
+    margen: Number(fila.margen),
+    serie: fila.serie.map((punto) => ({ inicio: punto.inicio, total: Number(punto.total) })),
+  };
+}
+
+type FilaRankingBase = {
+  producto_id: string;
+  nombre: string;
+  unidad: FilaRanking["unidad"];
+  cantidad: number | string;
+  monto: number | string;
+  no_comprar: boolean;
+  no_comprar_motivo: string | null;
+  nuevo: boolean;
+};
+
+export async function obtenerRankingProductos(
+  supabase: SupabaseClient,
+  opciones: { periodo: Periodo; orden: OrdenRanking; sentido: SentidoRanking; limite: number },
+): Promise<FilaRanking[]> {
+  const { desde, hasta } = limitesDelPeriodo(opciones.periodo);
+  const { data, error } = await supabase.rpc("ranking_productos", {
+    p_desde: desde,
+    p_hasta: hasta,
+    p_orden: opciones.orden,
+    p_sentido: opciones.sentido,
+    p_limite: opciones.limite,
+  });
+  if (error) throw error;
+
+  return ((data ?? []) as FilaRankingBase[]).map((fila) => ({
+    productoId: fila.producto_id,
+    nombre: fila.nombre,
+    unidad: fila.unidad,
+    cantidad: Number(fila.cantidad),
+    monto: Number(fila.monto),
+    noComprar: fila.no_comprar,
+    noComprarMotivo: fila.no_comprar_motivo,
+    nuevo: fila.nuevo,
   }));
 }
