@@ -173,7 +173,8 @@ describe("ranking_productos", () => {
       p_desde: DESDE,
       p_hasta: HASTA,
       p_orden: "cantidad",
-      p_sentido: "desc",
+      // asc: en un rango sin ventas solo "menos vendidos" trae filas.
+      p_sentido: "asc",
       p_limite: 1,
     });
     expect(data).toHaveLength(1);
