@@ -65,7 +65,11 @@ export function BarraLateral({ perfil }: { perfil: Perfil }) {
   const primeraLinea = palabrasNombre.join(" ");
 
   return (
-    <aside className="flex w-full shrink-0 flex-row overflow-x-auto bg-marco text-white md:w-[176px] md:flex-col md:overflow-x-visible">
+    // En escritorio la barra queda fija (sticky) a la altura de la pantalla:
+    // con una página larga no se estira hasta el final, y el bloque de
+    // usuario / "Cerrar sesión" va pegado justo debajo del último ítem en
+    // vez de al fondo de todo, siempre a la vista.
+    <aside className="flex w-full shrink-0 flex-row overflow-x-auto bg-marco text-white md:sticky md:top-0 md:h-screen md:w-[176px] md:flex-col md:self-start md:overflow-x-visible">
       <div className="flex shrink-0 items-center border-white/10 px-4 py-3 md:block md:border-b md:py-5">
         <p className="whitespace-nowrap font-[family-name:var(--font-display)] text-base leading-tight md:text-lg">
           {primeraLinea && (
@@ -78,7 +82,7 @@ export function BarraLateral({ perfil }: { perfil: Perfil }) {
         </p>
       </div>
 
-      <nav className="flex flex-row gap-1 px-2 py-2 md:flex-1 md:flex-col md:gap-6 md:overflow-y-auto md:py-4">
+      <nav className="flex flex-row gap-1 px-2 py-2 md:min-h-0 md:flex-initial md:flex-col md:gap-6 md:overflow-y-auto md:py-4">
         <GrupoNav titulo="Día a día" items={filtrarPorRol(construirGrupoDiaADia())} pathname={pathname} />
         <GrupoNav titulo="Administración" items={filtrarPorRol(construirGrupoAdministracion())} pathname={pathname} />
         <GrupoNav
