@@ -82,7 +82,7 @@ export function BarraLateral({ perfil }: { perfil: Perfil }) {
         </p>
       </div>
 
-      <nav className="flex flex-row gap-1 px-2 py-2 md:min-h-0 md:flex-initial md:flex-col md:gap-6 md:overflow-y-auto md:py-4">
+      <nav className="flex flex-row gap-1 px-2 py-2 md:min-h-0 md:flex-initial md:flex-col md:gap-6 md:overflow-y-auto md:py-4 md:[scrollbar-width:none] md:[&::-webkit-scrollbar]:hidden">
         <GrupoNav titulo="Día a día" items={filtrarPorRol(construirGrupoDiaADia())} pathname={pathname} />
         <GrupoNav titulo="Administración" items={filtrarPorRol(construirGrupoAdministracion())} pathname={pathname} />
         <GrupoNav
