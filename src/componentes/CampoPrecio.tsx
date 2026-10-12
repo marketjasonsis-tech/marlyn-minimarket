@@ -1,7 +1,12 @@
 "use client";
 
 import { useState, type ChangeEvent, type FocusEvent } from "react";
-import { formatearPrecio, limpiarTipeoPrecio, valorCrudoDesdeTipeo } from "@/lib/formatoPrecio";
+import {
+  formatearPrecio,
+  limpiarTipeoPrecio,
+  textoEdicionDesdeValorCrudo,
+  valorCrudoDesdeTipeo,
+} from "@/lib/formatoPrecio";
 
 // Reemplaza <input type="number"> para precio de costo y precio de
 // venta, a pedido del cliente: quiere ver "1.000" en vez de "1000" (y
@@ -50,7 +55,7 @@ export function CampoPrecio({
 
   function alEnfocar(evento: FocusEvent<HTMLInputElement>) {
     setEnfocado(true);
-    setTextoEnEdicion(value);
+    setTextoEnEdicion(textoEdicionDesdeValorCrudo(value));
     evento.currentTarget.select();
   }
 

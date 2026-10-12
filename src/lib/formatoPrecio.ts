@@ -37,3 +37,12 @@ export function limpiarTipeoPrecio(textoTipeado: string): string {
 export function valorCrudoDesdeTipeo(textoLimpio: string): string {
   return textoLimpio.replace(",", ".");
 }
+
+/** La vuelta de valorCrudoDesdeTipeo: del valor interno a lo que se
+ *  muestra al entrar a editar (sin punto de miles, con coma decimal).
+ *  Sin esto, un valor con centavos entraría al campo con punto, y
+ *  limpiarTipeoPrecio lo descartaría a la primera tecla ("1500.5"
+ *  pasaría a "15005"). */
+export function textoEdicionDesdeValorCrudo(valorCrudo: string): string {
+  return valorCrudo.replace(".", ",");
+}

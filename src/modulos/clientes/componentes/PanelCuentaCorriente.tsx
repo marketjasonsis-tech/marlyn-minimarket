@@ -7,6 +7,7 @@ import { crearClienteNavegador } from "@/lib/supabase/cliente";
 import { useEsDueño } from "@/lib/supabase/PerfilContext";
 import { Boton } from "@/componentes/Boton";
 import { Campo } from "@/componentes/Campo";
+import { CampoPrecio } from "@/componentes/CampoPrecio";
 import { Modal } from "@/componentes/Modal";
 import { BotonExportarCuentaCorriente } from "./BotonExportarCuentaCorriente";
 import { BotonExportarComparacionPrecios } from "./BotonExportarComparacionPrecios";
@@ -31,6 +32,13 @@ const etiquetaTipo: Record<MovimientoCuentaCorrienteDetallado["tipo"], string> =
   recargo: "Recargo",
   actualizacion: "Actualización de precios",
 };
+
+// Sumar dos montos con centavos deja basura de punto flotante
+// (10093.13 + 1009.31 = 11102.439999999999), y ese saldo va tal cual al
+// campo "Monto".
+function redondearCentavos(monto: number): number {
+  return Math.round(monto * 100) / 100;
+}
 
 export function PanelCuentaCorriente({
   cliente,
@@ -131,7 +139,7 @@ export function PanelCuentaCorriente({
     // Actualizado a mano (no esperar a router.refresh()): "cobrar" puede
     // pasar en el mismo gesto, justo después, y tiene que validar contra
     // el saldo ya con el recargo, no el viejo.
-    const nuevoSaldo = saldoActual + monto;
+    const nuevoSaldo = redondearCentavos(saldoActual + monto);
     setSaldoActual(nuevoSaldo);
     setPorcentajeRecargo("0");
     setMontoPago(String(nuevoSaldo));
@@ -168,7 +176,7 @@ export function PanelCuentaCorriente({
 
     // Mismo motivo que en aplicarRecargo: "cobrar" puede pasar en el
     // mismo gesto y tiene que validar contra el saldo ya actualizado.
-    const nuevoSaldo = saldoActual + montoAplicado;
+    const nuevoSaldo = redondearCentavos(saldoActual + montoAplicado);
     setSaldoActual(nuevoSaldo);
     setMontoPago(String(nuevoSaldo));
     // Se vuelve a pedir en vez de vaciarla: después de aplicar, las
@@ -446,15 +454,7 @@ export function PanelCuentaCorriente({
             )}
             <div className="flex items-end gap-2">
               <div className="flex-1">
-                <Campo
-                  etiqueta="Monto"
-                  id="montoPago"
-                  type="number"
-                  min={0}
-                  step="1"
-                  value={montoPago}
-                  onChange={(evento) => setMontoPago(evento.target.value)}
-                />
+                <CampoPrecio etiqueta="Monto" id="montoPago" value={montoPago} onChange={setMontoPago} />
               </div>
               <Boton
                 type="button"

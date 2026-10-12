@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { formatearPrecio, limpiarTipeoPrecio, valorCrudoDesdeTipeo } from "./formatoPrecio";
+import {
+  formatearPrecio,
+  limpiarTipeoPrecio,
+  textoEdicionDesdeValorCrudo,
+  valorCrudoDesdeTipeo,
+} from "./formatoPrecio";
 
 describe("formatearPrecio", () => {
   it("mil pesos queda con el punto de miles", () => {
@@ -56,5 +61,19 @@ describe("valorCrudoDesdeTipeo", () => {
 
   it("sin coma queda igual", () => {
     expect(valorCrudoDesdeTipeo("1500")).toBe("1500");
+  });
+});
+
+describe("textoEdicionDesdeValorCrudo", () => {
+  it("cambia el punto decimal por coma, que es lo que se tipea en el campo", () => {
+    expect(textoEdicionDesdeValorCrudo("1500.5")).toBe("1500,5");
+  });
+
+  it("sin decimales queda igual", () => {
+    expect(textoEdicionDesdeValorCrudo("1500")).toBe("1500");
+  });
+
+  it("es la vuelta de valorCrudoDesdeTipeo", () => {
+    expect(valorCrudoDesdeTipeo(textoEdicionDesdeValorCrudo("11102.44"))).toBe("11102.44");
   });
 });
