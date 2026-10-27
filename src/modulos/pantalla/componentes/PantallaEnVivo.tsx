@@ -110,20 +110,25 @@ export function PantallaEnVivo({ token }: { token: string }) {
     // 9 productos, en una TV que le da 540px de alto al navegador). Con
     // el alto fijo, lo único que se achica es la lista: el nombre del
     // comercio y el total quedan siempre a la vista.
-    <main className="flex h-screen flex-col justify-between bg-marco px-10 py-10 text-white">
-      <p className="shrink-0 font-[family-name:var(--font-display)] text-xl text-white/60">
+    //
+    // Márgenes, letra y separación entre filas están ajustados para que
+    // en esos 540px entren 15 productos (pedido de Jason, 2026-10-16:
+    // con el diseño anterior se veían 7 y el resto quedaba oculto
+    // arriba). Cualquier cambio acá se mide a 960×540 antes de subirlo.
+    <main className="flex h-screen flex-col justify-between bg-marco px-10 py-4 text-white">
+      <p className="shrink-0 font-[family-name:var(--font-display)] text-sm text-white/60">
         {clienteConfig.comercio.nombre}
       </p>
-      {/* scroll-py-6 = el mismo py-6: sin eso scrollIntoView deja la fila
+      {/* scroll-py-2 = el mismo py-2: sin eso scrollIntoView deja la fila
           pegada al borde, tocando la línea del total. La máscara
           desvanece lo que se va por arriba a lo largo de ese mismo
           margen, en vez de cortar una fila por la mitad contra el nombre
           del comercio; sin desplazar no tapa nada (la primera fila
           arranca justo donde la máscara ya es opaca). */}
-      <div className="min-h-0 flex-1 scroll-py-6 overflow-y-auto py-6 [mask-image:linear-gradient(to_bottom,transparent_0.5rem,black_1.5rem)]">
-        <ul ref={listaRef} className="flex flex-col gap-3">
+      <div className="min-h-0 flex-1 scroll-py-2 overflow-y-auto py-2 [mask-image:linear-gradient(to_bottom,transparent_0.125rem,black_0.5rem)]">
+        <ul ref={listaRef} className="flex flex-col gap-0.5">
           {carrito.items.map((item) => (
-            <li key={item.productoId} className={tamañoTextoItem(item.nombre)}>
+            <li key={item.productoId} className={`${tamañoTextoItem(item.nombre)} leading-tight`}>
               <div className="flex items-baseline justify-between gap-4">
                 <span>
                   {etiquetaCantidadItem(item) && (
@@ -146,7 +151,7 @@ export function PantallaEnVivo({ token }: { token: string }) {
           ))}
         </ul>
       </div>
-      <div className="shrink-0 border-t border-white/20 pt-6">
+      <div className="shrink-0 border-t border-white/20 pt-3">
         {ahorroPromociones > 0 && (
           <p className="numero mb-1 text-right text-lg font-semibold text-acento">
             Ahorrás {platita.format(ahorroPromociones)} con esta compra
@@ -154,7 +159,7 @@ export function PantallaEnVivo({ token }: { token: string }) {
         )}
         <div className="flex items-baseline justify-between">
           <span className="font-[family-name:var(--font-display)] text-2xl text-white/80">Total</span>
-          <span className="numero text-6xl font-semibold text-acento">{platita.format(carrito.total)}</span>
+          <span className="numero text-5xl font-semibold text-acento">{platita.format(carrito.total)}</span>
         </div>
       </div>
     </main>

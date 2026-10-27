@@ -2,12 +2,14 @@ import { describe, expect, it } from "vitest";
 import { etiquetaCantidadItem, tamañoTextoItem } from "./formato";
 
 describe("tamañoTextoItem", () => {
-  it("un nombre corto usa el tamaño grande de siempre", () => {
-    expect(tamañoTextoItem("Coca Cola 2L")).toBe("text-2xl");
+  it("un nombre corto usa el tamaño de siempre, que deja ver 15 productos en la TV", () => {
+    expect(tamañoTextoItem("Coca Cola 2L")).toBe("text-lg");
   });
 
   it("caso real del cliente: un nombre largo achica de tamaño", () => {
-    expect(tamañoTextoItem("CABALLA AL NATURAL /EN ACEITE Y EN AGUA CARACAS 380GR")).not.toBe("text-2xl");
+    expect(tamañoTextoItem("CABALLA AL NATURAL /EN ACEITE Y EN AGUA CARACAS 380GR")).not.toBe(
+      tamañoTextoItem("Coca Cola 2L"),
+    );
   });
 
   it("es monótono: un nombre más largo nunca da una clase más grande", () => {

@@ -13,10 +13,14 @@
 // Los cortes son heurísticos, no exactos — si algún nombre real sigue
 // sin entrar, ajustar estos números primero antes de complicar la
 // solución con medición real.
+//
+// Antes arrancaba en text-2xl: a 540px de alto (la TV) entraban solo 7
+// productos, y Jason pidió ver unos 15 (2026-10-16). Con estos cortes
+// entran 15 y, medido en Chrome a 960px de ancho, los nombres más
+// largos del catálogo real (el 99% mide hasta 49 letras, el más largo
+// 67) entran en una sola línea.
 const CORTES: [maximo: number, clase: string][] = [
-  [28, "text-2xl"],
-  [40, "text-xl"],
-  [55, "text-lg"],
+  [50, "text-lg"],
   [Infinity, "text-base"],
 ];
 
