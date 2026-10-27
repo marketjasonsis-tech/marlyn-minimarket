@@ -158,10 +158,14 @@ export function PanelVentas({
 
   // Mismo pedido que en Stock (2026-09-11), ahora también acá: a los 2
   // segundos sin tipear, se selecciona todo para escribir encima directo.
+  // Solo si el cursor sigue en el buscador: select() en Chrome también
+  // le da el foco, y al cargar un suelto (se busca por nombre, se toca
+  // en la grilla, se va al campo de $) se llevaba el monto que el
+  // cajero estaba tipeando al buscador (reportado por Jason, 2026-10-21).
   useEffect(() => {
     if (!busqueda) return;
     const temporizador = setTimeout(() => {
-      inputBusquedaRef.current?.select();
+      if (document.activeElement === inputBusquedaRef.current) inputBusquedaRef.current?.select();
     }, 2000);
     return () => clearTimeout(temporizador);
   }, [busqueda]);

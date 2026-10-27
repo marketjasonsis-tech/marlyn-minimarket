@@ -49,11 +49,14 @@ export function ListaProductos({
   // poder escribir encima sin ir a buscar el botón "✕" ni clickear
   // afuera y volver a entrar (bajado de 3s a pedido de Jason, mismo día).
   // Conviven los tres mecanismos: este timer, el select-on-focus de
-  // abajo y el botón "✕".
+  // abajo y el botón "✕". Solo si el cursor sigue en el buscador:
+  // select() en Chrome también le da el foco, y si se abría "Editar" y
+  // se empezaba a tipear antes de los 2s, lo tipeado iba a parar al
+  // buscador de atrás del modal (mismo caso que Ventas).
   useEffect(() => {
     if (!busqueda) return;
     const temporizador = setTimeout(() => {
-      inputBusquedaRef.current?.select();
+      if (document.activeElement === inputBusquedaRef.current) inputBusquedaRef.current?.select();
     }, 2000);
     return () => clearTimeout(temporizador);
   }, [busqueda]);
