@@ -243,7 +243,7 @@ propósito porque muchos televisores lo traen activado.
 | Crear/editar/eliminar productos, rubros, proveedores y promociones | ✓ | — (solo lectura) |
 | Ver precio de costo | ✓ | — |
 | Reportes, Usuarios, Auditoría | ✓ | — |
-| Historial de cierres de caja | todos | solo los propios |
+| Historial de cierres de caja | todos | los que abrió o cerró |
 
 La barrera real es la RLS de cada tabla; la interfaz solo esconde lo que
 fallaría. El costo se oculta en la base: la vista `productos_visibles`
@@ -263,6 +263,12 @@ lo devuelve `null` para el colaborador.
     después de ese fiado (el ajuste se hace a mano desde Clientes).
   - `registrar_ajuste_stock`
   - `registrar_movimiento_cuenta_corriente`
+  - `cerrar_turno_caja`: cualquier usuario activo cierra la caja
+    abierta, sin importar quién la abrió (con un update directo, un
+    colaborador no podía cerrar una caja ajena). Guarda quién cerró en
+    `turnos_caja.cerrado_por`, y Auditoría muestra el cierre a su
+    nombre (los cierres anteriores a octubre de 2026 no lo tienen y
+    figuran a nombre de quien abrió).
   - `calcular_actualizacion_precios_fiado` /
     `registrar_actualizacion_precios_fiado`
   - `importar_catalogo` / `reimportar_maestros`

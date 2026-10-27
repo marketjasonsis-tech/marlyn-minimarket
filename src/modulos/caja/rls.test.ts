@@ -24,6 +24,7 @@ describe("Rol operador en Caja (Fase 1 de PLAN-ROLES-AUDITORIA.md)", () => {
   let clienteOperador: SupabaseClient;
   let turnoOperadorId: string;
   let turnoAjenoId: string;
+  let turnoAjenoCerradoPorOperadorId: string;
 
   beforeAll(async () => {
     const password = "prueba-rls-operador-123";
@@ -79,6 +80,19 @@ describe("Rol operador en Caja (Fase 1 de PLAN-ROLES-AUDITORIA.md)", () => {
       throw errorTurnoAjeno ?? new Error("No se pudo crear el turno ajeno de prueba");
     }
     turnoAjenoId = turnoAjeno.id;
+
+    // La caja es compartida: lo abrió otro y lo cerró el operador. Se
+    // crea ya cerrado (como los de arriba): un turno abierto chocaría
+    // con la caja real del local (turno_abierto_unico_global).
+    const { data: turnoCerrado, error: errorTurnoCerrado } = await clienteServicio
+      .from("turnos_caja")
+      .insert({ usuario_id: otroUsuarioAuthId, monto_apertura: 0, estado: "cerrado", cerrado_por: operadorAuthId })
+      .select("id")
+      .single();
+    if (errorTurnoCerrado || !turnoCerrado) {
+      throw errorTurnoCerrado ?? new Error("No se pudo crear el turno cerrado por el operador");
+    }
+    turnoAjenoCerradoPorOperadorId = turnoCerrado.id;
   });
 
   afterAll(async () => {
@@ -92,6 +106,10 @@ describe("Rol operador en Caja (Fase 1 de PLAN-ROLES-AUDITORIA.md)", () => {
     }
     if (turnoAjenoId) {
       const { error } = await clienteServicio.from("turnos_caja").delete().eq("id", turnoAjenoId);
+      if (error) throw error;
+    }
+    if (turnoAjenoCerradoPorOperadorId) {
+      const { error } = await clienteServicio.from("turnos_caja").delete().eq("id", turnoAjenoCerradoPorOperadorId);
       if (error) throw error;
     }
     if (operadorAuthId) {
@@ -116,6 +134,26 @@ describe("Rol operador en Caja (Fase 1 de PLAN-ROLES-AUDITORIA.md)", () => {
 
     expect(error).toBeNull();
     expect(data).toEqual([]);
+  });
+
+  it("el operador ve el turno que abrió otro si lo cerró él", async () => {
+    const { data, error } = await clienteOperador
+      .from("turnos_caja")
+      .select("id")
+      .eq("id", turnoAjenoCerradoPorOperadorId);
+
+    expect(error).toBeNull();
+    expect(data).toHaveLength(1);
+  });
+
+  it("cerrar una caja que ya está cerrada avisa en vez de no hacer nada", async () => {
+    const { error } = await clienteOperador.rpc("cerrar_turno_caja", {
+      p_turno_id: turnoAjenoId,
+      p_monto_declarado: 0,
+      p_monto_calculado: 0,
+    });
+
+    expect(error?.message).toMatch(/ya estaba cerrada/);
   });
 
   it("el operador no puede insertar un movimiento de caja a nombre de otro usuario", async () => {

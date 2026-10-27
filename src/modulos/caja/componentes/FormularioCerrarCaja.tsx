@@ -16,11 +16,13 @@ export function FormularioCerrarCaja({ turnoId, montoCalculado }: { turnoId: str
   const [guardando, setGuardando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [diferencia, setDiferencia] = useState<number | null>(null);
+  const [cerradaPorOtro, setCerradaPorOtro] = useState(false);
 
   function abrir() {
     setMontoContado(String(montoCalculado));
     setError(null);
     setDiferencia(null);
+    setCerradaPorOtro(false);
     setAbierto(true);
   }
 
@@ -30,7 +32,7 @@ export function FormularioCerrarCaja({ turnoId, montoCalculado }: { turnoId: str
     // (turno abierto/no) al servidor — mientras el modal mostraba el
     // resultado no tenía sentido que la pantalla de atrás ya hubiera
     // cambiado por debajo.
-    if (diferencia !== null) router.refresh();
+    if (diferencia !== null || cerradaPorOtro) router.refresh();
   }
 
   async function confirmarCierre() {
@@ -43,19 +45,20 @@ export function FormularioCerrarCaja({ turnoId, montoCalculado }: { turnoId: str
 
     setGuardando(true);
     const supabase = crearClienteNavegador();
-    const { error: errorUpdate } = await supabase
-      .from("turnos_caja")
-      .update({
-        estado: "cerrado",
-        monto_cierre_declarado: contado,
-        monto_cierre_calculado: montoCalculado,
-        cerrado_en: new Date().toISOString(),
-      })
-      .eq("id", turnoId);
+    // Por función y no con un update directo: un colaborador no podía
+    // cerrar una caja que había abierto otro (ver migración
+    // 20261027100000_cerrar_caja_compartida.sql).
+    const { error: errorRpc } = await supabase.rpc("cerrar_turno_caja", {
+      p_turno_id: turnoId,
+      p_monto_declarado: contado,
+      p_monto_calculado: montoCalculado,
+    });
     setGuardando(false);
 
-    if (errorUpdate) {
-      setError("No se pudo cerrar la caja. Probá de nuevo.");
+    if (errorRpc) {
+      const yaCerrada = /ya estaba cerrada/i.test(errorRpc.message);
+      setCerradaPorOtro(yaCerrada);
+      setError(yaCerrada ? "Esta caja ya la cerró otra persona." : "No se pudo cerrar la caja. Probá de nuevo.");
       return;
     }
 
