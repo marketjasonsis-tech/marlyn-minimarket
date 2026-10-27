@@ -226,6 +226,9 @@ propósito porque muchos televisores lo traen activado.
 - **`/usuarios`:** alta de colaboradores con usuario y clave (Supabase
   Auth exige email, así que se arma `usuario@marlyn.local`; el login
   acepta usuario o correo), activar/desactivar y restablecer contraseña.
+  Un colaborador desactivado (ya no trabaja en el local) se esconde de
+  la lista; "Mostrar desactivados" lo vuelve a mostrar para reactivarlo.
+  No se borra porque sus ventas y movimientos lo siguen nombrando.
   Son Server Actions con la clave de servicio (`lib/supabase/admin.ts`,
   protegido con `server-only`).
 - **`/auditoria`:** una sola lista con movimientos de stock, cuenta

@@ -27,6 +27,15 @@ export function PanelUsuarios({
   const router = useRouter();
   const [ocupado, setOcupado] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Pedido de Jason (2026-10-27): un colaborador que ya no trabaja en el
+  // local se desactiva, pero seguía apareciendo en la lista. Se esconde
+  // (no se borra: sus ventas y movimientos lo siguen nombrando), y se
+  // puede volver a ver para reactivarlo.
+  const [mostrarDesactivados, setMostrarDesactivados] = useState(false);
+  const cantidadDesactivados = usuariosIniciales.filter((usuario) => !usuario.activo).length;
+  const usuariosVisibles = mostrarDesactivados
+    ? usuariosIniciales
+    : usuariosIniciales.filter((usuario) => usuario.activo);
 
   async function alternarActivo(usuario: Usuario) {
     setError(null);
@@ -48,7 +57,20 @@ export function PanelUsuarios({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex justify-end">
+      <div className="flex items-center justify-between gap-3">
+        {cantidadDesactivados > 0 ? (
+          <label className="flex items-center gap-2 text-sm text-texto-suave">
+            <input
+              type="checkbox"
+              checked={mostrarDesactivados}
+              onChange={(evento) => setMostrarDesactivados(evento.target.checked)}
+              className="h-4 w-4 accent-acento"
+            />
+            Mostrar desactivados ({cantidadDesactivados})
+          </label>
+        ) : (
+          <span />
+        )}
         <FormularioNuevoOperador />
       </div>
 
@@ -71,7 +93,7 @@ export function PanelUsuarios({
             </tr>
           </thead>
           <tbody>
-            {usuariosIniciales.map((usuario) => {
+            {usuariosVisibles.map((usuario) => {
               const esUsuarioActual = usuario.id === usuarioActualId;
               return (
                 <tr key={usuario.id} className="border-b border-linea last:border-b-0">
